@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.js"></script>
+<style>
+  a {
+    text-decoration: none;
+  }
+   #map {
+            /* position: absolute; */
+            width: 350px;
+            height: 300px;
+        }
+        
+        #popup {
+            min-width: 200px;
+            font-family: "Times New Roman", Times, serif;
+        }
+</style>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="/img/images/logo.png"/>
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+
+   <!-- Map -->
+   <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoidXRjMTEzIiwiYSI6ImNrY2ZuZmdpZzBocnEycmsybjM0NHpkbTMifQ.9k2AZ1oRegNpkidYZfJ65w';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [105, 21],
+        zoom: 9
+    });
+    map.addControl(new mapboxgl.NavigationControl());
+    map.addControl(new mapboxgl.FullscreenControl());
+    var data = [{
+        'name': 'Phương ngu',
+        'address': 'Số 3 Xuân Thủy, Cầu Giấy, HN',
+        'image': '/img/images/logo.png',
+        'arrcoordinates': [105.7825955, 21.0381849]
+    }, {
+        'name': 'Cơ sở 2 Phương đần',
+        'image': '/img/images/logo.png',
+        'address': 'Số 3 Xuân Thủy, Cầu Giấy, HN',
+        'arrcoordinates': [105.7918829, 21.0280719]
+    }, {
+        'name': 'Cơ sở 3 Phương ngáo',
+        'image': '/img/images/logo.png',
+        'address': 'Số 3 Xuân Thủy, Cầu Giấy, HN',
+        'arrcoordinates': [105.8086004, 21.00574]
+    }, {
+        'name': 'Cơ sở 4 Phương ối giời ôi',
+        'image': '/img/images/logo.png',
+        'address': 'Số 3 Xuân Thủy, Cầu Giấy, HN',
+        'arrcoordinates': [105.8021869, 21.0206291]
+    }, {
+        'name': 'Cơ sở 5 Phương cute',
+        'image': '/img/images/logo.png',
+        'address': 'Số 3 Xuân Thủy, Cầu Giấy, HN',
+        'arrcoordinates': [105.80118, 21.0232223]
+    }, {
+        'name': 'Cơ sở 6',
+        'image': '/img/images/logo.png',
+        'address': 'Số 3 Xuân Thủy, Cầu Giấy, HN',
+        'arrcoordinates': [105.80118, 21.0332223]
+    }, {
+        'name': 'Cơ sở 7',
+        'image': '/img/images/logo.png',
+        'address': 'Số 3 Xuân Thủy, Cầu Giấy, HN',
+        'arrcoordinates': [105.8052141, 20.9842802]
+    }];
+    map.on('load', function() {
+        map.loadImage("/img/images/map1.png", function(error, image) {
+            if (error) throw error;
+            map.addImage('marker', image);
+        });
+        var bounds = new mapboxgl.LngLatBounds();
+        var lstFeature = [];
+        data.forEach(e => {
+            bounds.extend(e.arrcoordinates);
+            lstFeature.push({
+                "type": "Feature",
+                "properties": e.name,
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": e.arrcoordinates
+                }
+            })
+            var html = '<div id="popup"><img src="' +
+                e.image + '" alt="" style="float: left;width:45px; height:45px;"><div><span style="color:red;font-weight: bold; font-size: 12px;">' +
+                e.name +
+                '</span><br><span> ' +
+                e.address +
+                '</span></div></div>';
+
+            var popup = new mapboxgl.Popup({
+                    closeOnClick: false,
+                    offset: 10,
+                    anchor: 'bottom',
+                    closeButton: false,
+                    class: 'popup'
+                })
+                .setLngLat(e.arrcoordinates)
+                .setHTML(html)
+                .addTo(map);
+        })
+        if (bounds) {
+            map.fitBounds(bounds, {
+                zoom: 13,
+                padding: {
+                    top: 60,
+                    bottom: 75,
+                    left: 65,
+                    right: 55
+                }
+
+            })
+        }
+        var source = map.getSource('point');
+        if (source) {
+            source.setData({
+                'type': 'FeatureCollection',
+                'features': lstFeature
+            })
+        } else {
+            map.addSource('point', {
+                'type': 'geojson',
+                'data': {
+                    'type': 'FeatureCollection',
+                    'features': lstFeature
+                }
+            });
+            map.addLayer({
+                'id': 'points',
+                'type': 'symbol',
+                'source': 'point',
+                'layout': {
+                    'icon-image': 'marker',
+                    'icon-size': 0.65,
+                    'icon-allow-overlap': true,
+                    'icon-ignore-placement': true,
+                }
+            });
+        }
+    })
+    
+    // PRODUCT DETAIL IMAGES
+    function changeImage(element) {
+
+    var main_prodcut_image = document.getElementById('main_product_image');
+    main_prodcut_image.src = element.src;
+}
+    function changeImage1(element) {
+
+    var main_prodcut_image = document.getElementById('main_product_image1');
+    main_prodcut_image.src = element.src;
+    }
+</script>
+</html>
